@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherPhys - Interactive Multi-Physics Simulation Lab</title>
+  <meta name="description" content="An advanced real-time physics sandbox laboratory including gravity orbital dynamics, electromagnetism charged particles, and soft-body wave propagation.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Sidebar Control Dashboard -->
+    <aside id="sidebar" class="glass-panel">
+      <!-- Brand Header -->
+      <header class="brand-section">
+        <div class="brand-icon">Φ</div>
+        <div class="brand-title">
+          <h1>AetherPhys</h1>
+          <p>Quantum Physics Lab</p>
+        </div>
+      </header>
+
+      <!-- Experiment Mode Selection -->
+      <section class="control-group">
+        <h2 class="control-group-title">Select Experiment</h2>
+        <div class="modes-container">
+          <button class="mode-tab active" data-mode="gravity" id="btn-mode-gravity">
+            <span class="mode-tab-icon">🪐</span>
+            <div class="mode-tab-info">
+              <span class="mode-title">N-Body Gravity</span>
+              <span class="mode-desc">Universal orbits & attraction</span>
+            </div>
+          </button>
+          <button class="mode-tab" data-mode="em" id="btn-mode-em">
+            <span class="mode-tab-icon">⚡</span>
+            <div class="mode-tab-info">
+              <span class="mode-title">Lorentz & Electromagnetism</span>
+              <span class="mode-desc">Charged particle accelerator</span>
+            </div>
+          </button>
+          <button class="mode-tab" data-mode="waves" id="btn-mode-waves">
+            <span class="mode-tab-icon">🌊</span>
+            <div class="mode-tab-info">
+              <span class="mode-title">Soft-Body Waves</span>
+              <span class="mode-desc">Lattice spring fluid mechanics</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Simulation Core Controls -->
+      <section class="control-group">
+        <h2 class="control-group-title">Engine Core</h2>
+        <div class="button-grid">
+          <button class="btn btn-primary" id="btn-play-pause">
+            <span id="play-pause-icon">⏸</span> <span id="play-pause-text">Pause</span>
+          </button>
+          <button class="btn btn-danger" id="btn-clear-all" data-tooltip="Clear simulation canvas" class="tooltip">
+            <span>🗑</span> Clear
+          </button>
+        </div>
+        
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Engine Step Speed</span>
+            <span class="slider-value" id="val-sim-speed">1.0x</span>
+          </div>
+          <input type="range" id="slider-sim-speed" min="0.1" max="4.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Visual Trail Retention</span>
+            <span class="slider-value" id="val-trails">85%</span>
+          </div>
+          <input type="range" id="slider-trails" min="0" max="100" step="5" value="85">
+        </div>
+      </section>
+
+      <!-- Dynamic Controls Specific to Gravity Mode -->
+      <section class="control-group physics-settings" id="settings-gravity">
+        <h2 class="control-group-title">Gravity Parameters</h2>
+        
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Gravitational Const (G)</span>
+            <span class="slider-value" id="val-g-constant">1.00</span>
+          </div>
+          <input type="range" id="slider-g-constant" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Spawn Node Mass</span>
+            <span class="slider-value" id="val-node-mass">100</span>
+          </div>
+          <input type="range" id="slider-node-mass" min="10" max="2000" step="10" value="100">
+        </div>
+
+        <div class="control-group">
+          <label class="control-group-title" for="preset-gravity">Lab Preset</label>
+          <select id="preset-gravity" class="selector">
+            <option value="stable-orbit">(Recommended) Solar System Dynamics</option>
+            <option value="three-body">Three-Body Chaotic Dance</option>
+            <option value="accretion">Black Hole Accretion Disk</option>
+            <option value="binary-star">Binary Star System</option>
+            <option value="empty">Empty Laboratory Grid</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Dynamic Controls Specific to EM Mode -->
+      <section class="control-group physics-settings" id="settings-em" style="display: none;">
+        <h2 class="control-group-title">Electromagnetism</h2>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Magnetic Field (B)</span>
+            <span class="slider-value" id="val-b-field">0.50</span>
+          </div>
+          <input type="range" id="slider-b-field" min="-2.0" max="2.0" step="0.1" value="0.5">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Emitter Gun Speed</span>
+            <span class="slider-value" id="val-gun-speed">4.0</span>
+          </div>
+          <input type="range" id="slider-gun-speed" min="1.0" max="10.0" step="0.5" value="4.0">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Coulomb Electric Force</span>
+            <span class="slider-value" id="val-e-constant">1.00</span>
+          </div>
+          <input type="range" id="slider-e-constant" min="0.0" max="5.0" step="0.2" value="1.0">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Electric Field Density</span>
+            <span class="slider-value" id="val-field-density">40%</span>
+          </div>
+          <input type="range" id="slider-field-density" min="0" max="100" step="10" value="40">
+        </div>
+
+        <div class="control-group">
+          <span class="control-group-title">Particle Gun Spawn Ammo</span>
+          <div class="radio-group">
+            <label class="radio-btn">
+              <input type="radio" name="spawn-charge" value="1" checked id="spawn-proton">
+              <span class="radio-label radio-label-purple">Proton (+q)</span>
+            </label>
+            <label class="radio-btn">
+              <input type="radio" name="spawn-charge" value="-1" id="spawn-electron">
+              <span class="radio-label">Electron (-q)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-group-title" for="preset-em">Lab Preset</label>
+          <select id="preset-em" class="selector">
+            <option value="cyclotron">(Recommended) Cyclotron Resonance</option>
+            <option value="dipole-attract">Dipole Magnetic Force</option>
+            <option value="magnetic-mirror">Magnetic Particle Trap</option>
+            <option value="coulomb-scattering">Coulomb Rutherford Scattering</option>
+            <option value="empty-em">Empty Field Chamber</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Dynamic Controls Specific to Wave Mode -->
+      <section class="control-group physics-settings" id="settings-waves" style="display: none;">
+        <h2 class="control-group-title">Soft-Body Waves</h2>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Medium Friction (Viscosity)</span>
+            <span class="slider-value" id="val-damping">0.015</span>
+          </div>
+          <input type="range" id="slider-damping" min="0.001" max="0.100" step="0.002" value="0.015">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Surface Tension (Spring K)</span>
+            <span class="slider-value" id="val-spring-k">0.15</span>
+          </div>
+          <input type="range" id="slider-spring-k" min="0.02" max="0.50" step="0.01" value="0.15">
+        </div>
+
+        <div class="slider-container">
+          <div class="slider-header">
+            <span class="slider-label">Tap Ripple Amplitude</span>
+            <span class="slider-value" id="val-ripple-amp">30</span>
+          </div>
+          <input type="range" id="slider-ripple-amp" min="5" max="100" step="5" value="30">
+        </div>
+
+        <div class="control-group">
+          <span class="control-group-title">Interactive Click Action</span>
+          <div class="radio-group">
+            <label class="radio-btn">
+              <input type="radio" name="wave-click-mode" value="ripple" checked id="click-ripple">
+              <span class="radio-label">Excite Wave</span>
+            </label>
+            <label class="radio-btn">
+              <input type="radio" name="wave-click-mode" value="barrier" id="click-barrier">
+              <span class="radio-label">Draw Barriers</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-group-title" for="preset-waves">Lab Preset</label>
+          <select id="preset-waves" class="selector">
+            <option value="center-drip">(Recommended) Concentric Single Source</option>
+            <option value="double-slit">Double Slit Wave Diffraction</option>
+            <option value="boundary-resonance">Resonating Cavity Waves</option>
+            <option value="barrier-scattering">Wave Diffraction off Barriers</option>
+            <option value="flat-calm">Flat Calm Medium</option>
+          </select>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Main Canvas Area -->
+    <main id="canvas-area">
+      <!-- Main Physics Rendering Loop Canvas -->
+      <canvas id="simulation-canvas"></canvas>
+
+      <!-- Floating Toolbar Panel for UI actions -->
+      <div id="toolbar" class="glass-panel">
+        <button class="tool-btn btn active tooltip" data-tooltip="Spawn tool (Place Nodes)" id="tool-place">✏️</button>
+        <button class="tool-btn btn tooltip" data-tooltip="Slingshot tool (Set Vector Velocity)" id="tool-slingshot">🏹</button>
+        <button class="tool-btn btn tooltip" data-tooltip="Emitter gun tool (Spawn continuous waves/particles)" id="tool-emitter">🔫</button>
+        <button class="tool-btn btn tooltip" data-tooltip="Force Vector view overlay (ON/OFF)" id="tool-vectors">👁️</button>
+      </div>
+
+      <!-- Floating Energy Telemetry Canvas Graph -->
+      <section id="telemetry-panel" class="glass-panel glow-cyan">
+        <div class="telemetry-header">
+          <span class="telemetry-title">Energy Conservation Graph</span>
+          <span style="color: var(--color-cyan)" id="telemetry-mode-label">Orbit Energy</span>
+        </div>
+        <canvas id="telemetry-canvas"></canvas>
+        <div class="telemetry-stats">
+          <div class="telemetry-stat-box">
+            <span class="telemetry-stat-label">Kinetic E</span>
+            <div class="telemetry-stat-value" style="color: var(--color-pink)" id="stat-ke">0.00</div>
+          </div>
+          <div class="telemetry-stat-box">
+            <span class="telemetry-stat-label">Potential E</span>
+            <div class="telemetry-stat-value" style="color: var(--color-cyan)" id="stat-pe">0.00</div>
+          </div>
+          <div class="telemetry-stat-box">
+            <span class="telemetry-stat-label">Total E (K+U)</span>
+            <div class="telemetry-stat-value" style="color: var(--color-purple)" id="stat-total">0.00</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Selected Node Inspector Box -->
+      <section id="inspector-panel" class="glass-panel glow-purple">
+        <div class="telemetry-header" style="border-bottom: 1px solid var(--border-dim); padding-bottom: 4px; margin-bottom: 8px;">
+          <span class="telemetry-title" style="color: var(--color-purple)" id="inspector-name">Node Inspector</span>
+          <button id="btn-inspector-close" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px;">×</button>
+        </div>
+        <div id="inspector-content">
+          <div class="inspector-row">
+            <span class="inspector-label">Type</span>
+            <span class="inspector-value" id="inspect-type">Star</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-label">Mass / Charge</span>
+            <span class="inspector-value" id="inspect-mass">1000.0</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-label">Coordinates (x, y)</span>
+            <span class="inspector-value" id="inspect-pos">(400, 300)</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-label">Velocity Vector</span>
+            <span class="inspector-value" id="inspect-vel">0.0 px/s</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-label">Net Force Vector</span>
+            <span class="inspector-value" id="inspect-force">0.0 N</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Keyboard Hotkey Legend -->
+      <div id="legend-panel" class="glass-panel">
+        <div class="hotkey-item">
+          <span class="hotkey-key">Space</span> Toggle Pause
+        </div>
+        <div class="hotkey-item">
+          <span class="hotkey-key">C</span> Clear Canvas
+        </div>
+        <div class="hotkey-item">
+          <span class="hotkey-key">Esc</span> Deselect
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="physics.js"></script>
+</body>
+</html>
